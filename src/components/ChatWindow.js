@@ -29,7 +29,7 @@ class ChatWindow extends Component {
   }
 
   addMessage(message) {
-    const date = message.date ? toDate(message.date) : Date.now();
+    const date = message.date ? toDate(message.date) : toDate(Date.now())
 
     const source = message.origin || 'OTHER';
     const author = message.author || source;
@@ -47,6 +47,7 @@ class ChatWindow extends Component {
   }
 
   sendMessage(message) {
+    console.log(JSON.stringify(message))
     this.socket.send(JSON.stringify(message));
   }
 
@@ -80,7 +81,7 @@ class ChatWindow extends Component {
           })}
         </MessagesWrapper>
 
-        <ChatWindowInput onSend={(message) => { this.addMessage(message)}} />
+        <ChatWindowInput onSend={this.sendMessage} />
       </div>
     );
   }
