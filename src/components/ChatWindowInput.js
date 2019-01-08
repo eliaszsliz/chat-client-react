@@ -12,51 +12,76 @@ export default class ChatWindowMessage extends Component {
       error: false
     };
 
-    this.onSend = this.onSend.bind(this);
-    this.onKeyPress = this.onKeyPress.bind(this);
+    this.handleSendAttempt = this.handleSendAttempt.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.hasErrors = this.hasErrors.bind(this);
   }
 
-  onSend() {
+  handleSendAttempt() {
+    if (this.hasErrors()){
+      this.setState({ error: true })
+    }
+    else {
+      const { author, body } = this.state;
+      this.props.onSend({
+        author,
+        body
+      });
+      this.setState({
+        body: ''
+      })
+    }
+  }
+
+  hasErrors() {
     const { author, body } = this.state;
-    this.props.onSend({ author, body });
-    this.setState({
-      body: ''
-    })
+    return author.trim().length === 0 || body.trim().length === 0;
   }
 
-  onKeyPress = (e) => {
+  handleKeyPress(e) {
     if (e.key === 'Enter') {
-      this.onSend();
+      e.preventDefault();
+      this.handleSendAttempt();
     }
   }
 
   render() {
     return (<div>
-      <FormField>
+      <FormField error={this.state.error && !this.state.author.trim().length}>
         <input type="text"
                placeholder="Author"
                onChange={(event) => {
                  this.setState({
-                   author: event.target.value
+                   author: event.target.value,
+                   error: false,
                  })
                }}
         />
       </FormField>
 
-      <FormField>
+      <FormField error={this.state.error && !this.state.body.trim().length}>
         <textarea cols="30" rows="10"
                   placeholder="Message body"
+                  value={this.state.body}
                   onChange={(event) => {
                     this.setState({
-                      body: event.target.value
+                      body: event.target.value,
+                      error: false,
                     })
                   }}
-                  onKeyPress={this.onKeyPress}
+                  onKeyPress={this.handleKeyPress}
 
         />
       </FormField>
 
-      <StyledButton onClick={this.onSend}>Send</StyledButton>
+      <StyledButton onClick={this.handleSendAttempt}>Send</StyledButton>
+
+      <ErrorMessage
+        className='ChatWindowInput__Error'
+        error={this.state.error}
+      >
+        Fill in author and message field, please
+      </ErrorMessage>
     </div>)
   }
 }
@@ -65,14 +90,11 @@ const FormField = styled.div`
   & > * {
     width: calc(100% - 16px);
     padding: 8px;
+    
+    ${ (props) => props.error ? `
+      border: 2px solid indianred;
+    ` : null}
   }
-`;
-
-const Message = styled.div`
-    background: #e6fff2;
-    padding: 12px;
-    margin: 8px;
-    display: inline-block;
 `;
 
 const StyledButton = styled.button`
@@ -81,4 +103,11 @@ const StyledButton = styled.button`
   border: none;
   width: 100%;
   padding: 18px;
+`;
+
+const ErrorMessage = styled.div`
+  display: ${ props => props.error ? null : 'none'};
+  color: indianred;
+  padding: 8px;
+  text-align: center;
 `;
